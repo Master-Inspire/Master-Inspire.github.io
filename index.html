@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" content="text/html">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--COMMENTED OUT!-->
+    <!--<script src="bower_components/jquery/dist/jquery.min.js"></script>-->
+    <!--<script src="bower_components/modernizr/modernizr.js"></script>-->
+    <!--<script src="bower_components/foundation/js/foundation.min.js"></script>-->
+    <!--<script src="bower_components/marked/marked.min.js"></script>-->
+    <!--<script src="bower_components/velocity/velocity.min.js"></script>-->
+    <!--<script src="bower_components/velocity/velocity.ui.min.js"></script>-->
+    <!--<link href="bower_components/foundation/css/normalize.css" rel="stylesheet">-->
+    <!--<link href="bower_components/foundation/css/foundation.min.css" rel="stylesheet">-->
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/js/foundation.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.ui.min.js"></script>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.css" rel="stylesheet">
+
+    <title>Animus Blog</title>
+
+    <script>
+        'use strict';
+        $(document).ready(function() {
+            $(this).foundation();
+
+            var random = function(min, max) {
+                return (Math.floor(Math.random() * (max - min + 1)) + min);
+            };
+
+            var getSearchObject = function() {
+                var o      = {};
+                var search = window.location.search.trim();
+                if (search.indexOf('?') !== 0) {
+                    return o;
+                }
+                search = search.substring(1);
+                search.split('&').forEach(function(v) {
+                    var l                 = v.split('=');
+                    o[l[0].toLowerCase()] = l[1];
+                });
+                console.log(o);
+                return o;
+            };
+
+            var selectors  = {
+                main        : '#main',
+                mainModal   : '#mainModal',
+                error       : 'div.error',
+                modalContent: '#modalContent',
+                button      : 'button.button',
+                mainFrame   : 'div.mainFrame',
+                keyword     : 'h1.keyword'
+            };
+            var animations = [
+                'callout.shake',
+                'callout.pulse',
+                'callout.tada',
+                'callout.bounce',
+                'callout.swing',
+                //'callout.flash',
+                'transition.fadeIn',
+                'transition.bounceIn',
+                'transition.bounceUpIn',
+                'transition.bounceDownIn',
+                'transition.bounceLeftIn',
+                'transition.slideRightIn',
+                'transition.bounceRightIn',
+                'transition.slideUpIn',
+                'transition.slideDownIn',
+                'transition.slideLeftIn',
+                'transition.slideUpBigIn',
+                'transition.flipXIn',
+                'transition.slideDownBigIn',
+                'transition.slideLeftBigIn',
+                'transition.slideRightBigIn',
+                'transition.perspectiveUpIn',
+                'transition.perspectiveDownIn',
+                'transition.perspectiveLeftIn',
+                'transition.perspectiveRightIn',
+                'transition.flipYIn',
+                'transition.flipBounceXIn',
+                'transition.flipBounceYIn',
+                'transition.swoopIn',
+                'transition.whirlIn',
+                'transition.shrinkIn',
+                'transition.expandIn'
+            ];
+
+            (function() {
+                var mainFunction = function() {
+                    var randomColor       = function() {
+                        return random(10, 250);
+                    };
+                    var randomColorInvert = function(color) {
+                        return Math.abs(250 - color);
+                    };
+                    var r                 = randomColor(), g = randomColor(), b = randomColor();
+                    var main              = $(selectors.main);
+                    var frame             = main.children(selectors.mainFrame);
+                    frame.velocity({
+                        'backgroundColorRed'  : r,
+                        'backgroundColorGreen': g,
+                        'backgroundColorBlue' : b
+                    });
+                    var keywords          = ['When?', 'Where?', 'How?', 'Why?', 'What?', 'Which?', 'Who?', 'Enough!'];
+                    frame.children(selectors.keyword)
+                            .velocity({
+                                'colorRed'  : randomColorInvert(r),
+                                'colorGreen': randomColorInvert(g),
+                                'colorBlue' : randomColorInvert(b)
+                            })
+                            .text(keywords[random(0, keywords.length - 1)]);
+                };
+                mainFunction();
+                setInterval(function() {
+                    mainFunction();
+                }, 2000);
+            })();
+
+            (function() {
+                var allArticles     = 'allArticles',
+                    which           = 'which',
+                    // Not in use.
+                    articleName     = 'articleName',
+                    articleIndex    = 'articleIndex',
+                    contentCache    = 'contentCache',
+                    cacheExpiration = 'cacheExpiration';
+
+                var setDataAjax = function(callback) {
+                    $.get('list.txt', function(data) {
+                        var str                       = data.toString().split('\n').filter(function(value) {
+                            return value.trim() !== '';
+                        });
+                        var o                         = { allArticles: str };
+                        localStorage.clear();
+                        localStorage[allArticles]     = JSON.stringify(o);
+                        localStorage[cacheExpiration] = Date.now();
+                        if (callback) {
+                            callback();
+                        }
+                    });
+                };
+
+                var checkData = function() {
+                    var diff = (Date.now() - (parseInt(localStorage[cacheExpiration]))) / 1000 / 60 / 60;
+                    if (isNaN(diff) || diff >= 72 || diff <= 0) {
+                        localStorage.clear();
+                    }
+                    var item = localStorage[allArticles];
+                    if (item !== undefined) {
+                        var p = JSON.parse(item);
+                        return (p.hasOwnProperty(allArticles) && Array.isArray(p[allArticles]) && p[allArticles].length > 0);
+                    }
+                    return false;
+                };
+
+                var getArticle = function(index) {
+                    if (!checkData()) {
+                        setDataAjax();
+                        var modal = $(selectors.mainModal);
+                        modal.children(selectors.error).removeClass('hide');
+                        modal.children(selectors.modalContent).addClass('hide');
+                        return;
+                    }
+                    var list   = JSON.parse(localStorage[allArticles])[allArticles];
+                    var length = list.length - 1;
+                    if (length > 0) {
+                        var current;
+                        index = parseInt(index, 10);
+                        if (!isNaN(index)) {
+                            if (index < 0) {
+                                index = length;
+                            } else if (index > length) {
+                                index = 0;
+                            }
+                        } else {
+                            index = random(0, length);
+                            while (parseInt(localStorage[articleIndex], 10) === index) {
+                                index = random(0, length);
+                            }
+                        }
+                        current                    = list[index];
+                        localStorage[articleIndex] = index;
+                        localStorage[articleName]  = current;
+                        (function(article, i) {
+                            var modal   = $(selectors.mainModal);
+                            var error   = modal.children(selectors.error);
+                            error.addClass('hide');
+                            var content = modal.children(selectors.modalContent);
+                            content.addClass('hide');
+                            var cache   = localStorage[contentCache + i.toString()];
+                            if (cache !== undefined && cache.length > 0) {
+                                content.html(marked(cache));
+                                content.removeClass('hide');
+                                content.velocity(animations[random(0, animations.length - 1)]);
+                            } else {
+                                $.get(article, function(d) {
+                                    localStorage[contentCache + i.toString()] = d;
+                                    content.html(marked(d));
+                                    content.removeClass('hide');
+                                    content.velocity(animations[random(0, animations.length - 1)]);
+                                }).fail(function() {
+                                    error.removeClass('hide');
+                                });
+                            }
+
+                        })(current, index);
+                        console.log(current);
+                    }
+                };
+
+                var showInitContent = function() {
+                    var o = getSearchObject();
+                    if (o.hasOwnProperty(which) && !isNaN(o[which])) {
+                        getArticle(parseInt(o[which], 10));
+                        setTimeout(function() {
+                            $(selectors.mainModal).foundation('reveal', 'open');
+                        }, 10);
+                    }
+                };
+
+                if (!checkData()) {
+                    setDataAjax(function() {
+                        showInitContent();
+                    });
+                } else {
+                    showInitContent();
+                }
+
+                $(selectors.main).find(selectors.button).click(function() {
+                    getArticle();
+                });
+
+                $(window).keyup(function(e) {
+                    var keys   = [13, 37, 39];
+                    var p      = parseInt(localStorage[articleIndex], 10);
+                    var values = [null, p - 1, p + 1];
+                    var i      = keys.indexOf(e.which);
+                    if (i !== -1) {
+                        var modal = $(selectors.mainModal);
+                        if (!modal.hasClass('open')) {
+                            modal.foundation('reveal', 'open');
+                        }
+                        getArticle(values[i]);
+                    }
+                });
+            })();
+
+            $(this).on('open.fndtn.reveal', '[data-reveal]', function() {
+                var modal   = $(this);
+                var current = animations[random(0, animations.length - 1)];
+                modal.velocity(current);
+            });
+
+            $(this).on('opened.fndtn.reveal', '[data-reveal]', function() {
+                $('.reveal-modal-bg').hide();
+                $(selectors.main).find(selectors.button).prop('disabled', true);
+            });
+
+            $(this).on('closed.fndtn.reveal', '[data-reveal]', function() {
+                $(selectors.main).find(selectors.button).prop('disabled', false);
+            });
+
+            //window.addEventListener('touchstart', function(e) {
+            //});
+            //window.addEventListener('touchend', function(e) {
+            //});
+        });
+    </script>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            border: none;
+        }
+
+        #main > div.mainFrame {
+            width: 100vw;
+            height: 100vh;
+            text-align: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .mainFrame > h1, .mainFrame > button {
+            position: relative;
+            top: 40vh;
+            margin: 0;
+        }
+
+        #mainModal {
+            top: 5vh;
+            min-height: 90vh;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        div.error, div.error > h1, div.error > h3 {
+            color: red;
+            text-align: center !important;
+        }
+
+        div.error {
+            position: relative;
+            top: 22vh;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        pre, code {
+            background-color: #f2f2f2;
+            font-family: Consolas, Courier, monospace;
+            border: none;
+        }
+
+        pre {
+            margin-bottom: 2rem;
+            border: 1px solid #d8d8d8;
+            padding: 1rem;
+        }
+
+        pre code span.label {
+            background: none;
+            color: #333333;
+            border: none;
+            font: inherit;
+            display: initial;
+            padding: inherit;
+        }
+
+        /*
+        pre code span.keyword {
+            color: red;
+        }
+
+        pre code .title {
+            color: #0a46ff;
+        }
+
+        pre code span.comment {
+            color: #009900;
+        }
+
+        pre code span.number {
+            color: #ffa612;
+        }
+
+        pre code span.string {
+            color: rgb(139, 59, 152);
+        }
+        */
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="mainFrame">
+            <h1 class="keyword">How?</h1>
+            <br>
+            <button class="button alert radius" tabindex="-100" data-reveal-id="mainModal">Show Me the Code!</button>
+        </div>
+    </div>
+    <div id="mainModal" class="reveal-modal large" data-options="animation: 'none'" data-reveal
+         aria-hidden="true"
+         role="dialog">
+        <div class="error">
+            <h1>Opps...!</h1>
+
+            <h3>Something went wrong!</h3>
+        </div>
+        <article id="modalContent" class="hide">
+        </article>
+        <br>
+        <a class="close-reveal-modal show-for-touch" aria-label="Close">&#215;</a>
+    </div>
+</body>
+</html>
