@@ -2,17 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8" content="text/html">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1">
 
     <!--COMMENTED OUT!-->
-    <!--<script src="bower_components/jquery/dist/jquery.min.js"></script>-->
+    <!--<script src="bower_components/jquery/dist/jquery.js"></script>-->
     <!--<script src="bower_components/modernizr/modernizr.js"></script>-->
-    <!--<script src="bower_components/foundation/js/foundation.min.js"></script>-->
-    <!--<script src="bower_components/marked/marked.min.js"></script>-->
-    <!--<script src="bower_components/velocity/velocity.min.js"></script>-->
-    <!--<script src="bower_components/velocity/velocity.ui.min.js"></script>-->
+    <!--<script src="bower_components/foundation/js/foundation.js"></script>-->
+    <!--<script src="bower_components/marked/lib/marked.js"></script>-->
+    <!--<script src="bower_components/velocity/velocity.js"></script>-->
+    <!--<script src="bower_components/velocity/velocity.ui.js"></script>-->
+    <!--<script src="bower_components/hammerjs/hammer.js"></script>-->
     <!--<link href="bower_components/foundation/css/normalize.css" rel="stylesheet">-->
-    <!--<link href="bower_components/foundation/css/foundation.min.css" rel="stylesheet">-->
+    <!--<link href="bower_components/foundation/css/foundation.css" rel="stylesheet">-->
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
@@ -20,6 +21,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.2/velocity.ui.min.js"></script>
+    <script>!Modernizr.touch || document.write('<script src="//cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.4/hammer.min.js"><\/script>')</script>
     <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" rel="stylesheet">
     <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.css" rel="stylesheet">
 
@@ -93,6 +95,7 @@
                 'transition.expandIn'
             ];
 
+            // Change background color and keyword randomly.
             (function() {
                 var mainFunction = function() {
                     var randomColor       = function() {
@@ -169,88 +172,131 @@
                         modal.children(selectors.modalContent).addClass('hide');
                         return;
                     }
+
                     var list   = JSON.parse(localStorage[allArticles])[allArticles];
                     var length = list.length - 1;
-                    if (length > 0) {
-                        var current;
-                        index = parseInt(index, 10);
-                        if (!isNaN(index)) {
-                            if (index < 0) {
-                                index = length;
-                            } else if (index > length) {
-                                index = 0;
-                            }
-                        } else {
-                            index = random(0, length);
-                            while (parseInt(localStorage[articleIndex], 10) === index) {
-                                index = random(0, length);
-                            }
+                    var current;
+                    index      = parseInt(index, 10);
+                    if (!isNaN(index)) {
+                        if (index < 0) {
+                            index = length;
+                        } else if (index > length) {
+                            index = 0;
                         }
-                        current                    = list[index];
-                        localStorage[articleIndex] = index;
-                        localStorage[articleName]  = current;
-                        (function(article, i) {
-                            var modal   = $(selectors.mainModal);
-                            var error   = modal.children(selectors.error);
-                            error.addClass('hide');
-                            var content = modal.children(selectors.modalContent);
-                            content.addClass('hide');
-                            var cache   = localStorage[contentCache + i.toString()];
-                            if (cache !== undefined && cache.length > 0) {
-                                content.html(marked(cache));
+                    } else {
+                        index = random(0, length);
+                        while (parseInt(localStorage[articleIndex], 10) === index) {
+                            index = random(0, length);
+                        }
+                    }
+
+                    var threeBitIndex          = (function(n) {
+                        var temp = n.toString();
+                        while (temp.length < 3) {
+                            temp = '0' + temp;
+                        }
+                        return temp;
+                    })(index);
+                    current                    = list[index];
+                    localStorage[articleIndex] = threeBitIndex;
+                    localStorage[articleName]  = current;
+                    (function(article, i) {
+                        var modal    = $(selectors.mainModal);
+                        var error    = modal.children(selectors.error);
+                        var content  = modal.children(selectors.modalContent);
+                        var cacheKey = contentCache + i;
+                        var cache    = localStorage[cacheKey];
+                        error.addClass('hide');
+                        content.addClass('hide');
+                        if (cache !== undefined && cache.length > 0) {
+                            content.html(marked(cache));
+                            content.removeClass('hide');
+                            content.velocity(animations[random(0, animations.length - 1)]);
+                        } else {
+                            $.get(article, function(d) {
+                                localStorage[cacheKey] = d;
+                                content.html(marked(d));
                                 content.removeClass('hide');
                                 content.velocity(animations[random(0, animations.length - 1)]);
-                            } else {
-                                $.get(article, function(d) {
-                                    localStorage[contentCache + i.toString()] = d;
-                                    content.html(marked(d));
-                                    content.removeClass('hide');
-                                    content.velocity(animations[random(0, animations.length - 1)]);
-                                }).fail(function() {
-                                    error.removeClass('hide');
-                                });
-                            }
-
-                        })(current, index);
-                        console.log(current);
-                    }
+                            }).fail(function() {
+                                error.removeClass('hide');
+                            });
+                        }
+                    })(current, threeBitIndex);
+                    console.log(threeBitIndex + ': ' + current);
                 };
 
-                var showInitContent = function() {
-                    var o = getSearchObject();
-                    if (o.hasOwnProperty(which) && !isNaN(o[which])) {
-                        getArticle(parseInt(o[which], 10));
-                        setTimeout(function() {
-                            $(selectors.mainModal).foundation('reveal', 'open');
-                        }, 10);
-                    }
-                };
+                // Show init content.
+                (function() {
+                    var showInitContent = function() {
+                        var o = getSearchObject();
+                        var i = parseInt(localStorage[articleIndex], 10);
+                        if (o.hasOwnProperty(which) && !isNaN(o[which])) {
+                            i = parseInt(o[which], 10);
+                        }
+                        if (!isNaN(i)) {
+                            getArticle(i);
+                            setTimeout(function() {
+                                $(selectors.mainModal).foundation('reveal', 'open');
+                            }, 100);
+                        }
+                    };
 
-                if (!checkData()) {
-                    setDataAjax(function() {
+                    if (!checkData()) {
+                        setDataAjax(function() {
+                            showInitContent();
+                        });
+                    } else {
                         showInitContent();
-                    });
-                } else {
-                    showInitContent();
-                }
+                    }
+                })();
 
-                $(selectors.main).find(selectors.button).click(function() {
-                    getArticle();
-                });
-
-                $(window).keyup(function(e) {
-                    var keys   = [13, 37, 39];
-                    var p      = parseInt(localStorage[articleIndex], 10);
-                    var values = [null, p - 1, p + 1];
-                    var i      = keys.indexOf(e.which);
-                    if (i !== -1) {
-                        var modal = $(selectors.mainModal);
+                // Shortcuts and Touch events
+                (function() {
+                    var showQuickly = function(i) {
+                        var p      = parseInt(localStorage[articleIndex], 10);
+                        var values = [null, p - 1, p + 1];
+                        var modal  = $(selectors.mainModal);
                         if (!modal.hasClass('open')) {
                             modal.foundation('reveal', 'open');
                         }
                         getArticle(values[i]);
-                    }
-                });
+                    };
+
+                    $(selectors.main).find(selectors.button).click(function() {
+                        getArticle();
+                    });
+
+                    $(window).keyup(function(e) {
+                        // 13: enter, random;
+                        // 37: left, previous;
+                        // 39: right, next.
+                        var keys = [13, 37, 39];
+                        var i    = keys.indexOf(e.which);
+                        if (i !== -1) {
+                            showQuickly(i);
+                        }
+                    });
+
+                    (function() {
+                        if (!Modernizr.touch) {
+                            return;
+                        }
+                        delete Hammer.defaults.cssProps.userSelect;
+                        var hammertime = new Hammer(document.getElementsByTagName('body')[0], {});
+                        hammertime.on('tap swipe', function(ev) {
+                            if (ev.type === 'swipe' || (ev.type === 'tap' && ev.tapCount === 2)) {
+                                //tap, left, right
+                                var directions = [1, 2, 4];
+                                var i          = directions.indexOf(ev.direction);
+                                if (i !== -1) {
+                                    showQuickly(i);
+                                }
+                            }
+                        });
+                    })();
+                })();
+
             })();
 
             $(this).on('open.fndtn.reveal', '[data-reveal]', function() {
@@ -268,10 +314,6 @@
                 $(selectors.main).find(selectors.button).prop('disabled', false);
             });
 
-            //window.addEventListener('touchstart', function(e) {
-            //});
-            //window.addEventListener('touchend', function(e) {
-            //});
         });
     </script>
     <style>

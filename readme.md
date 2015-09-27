@@ -23,6 +23,8 @@ The file which named **list.txt** contains all articles - It's absolute url path
 
 If the url contains a `search` part, and has a key named `which` with a zero-based numeric value `n`, then the url in the nth-line of the **list.txt** will be requested and show.
 
+The `articleIndex` is used as initial content if `which` is not specified.
+
 If the `Show Me the Code` button is clicked, then a random article will be show.
 
 Local Storage keys:
@@ -40,11 +42,11 @@ Shortcuts:
 * Press `Enter` key to show a random article.
 * Press `Esc` key to close the modal.
 
-**Todo**:
+Touch events:
 
-* Add touch event support.
-* Add search support. Search for articles.
-* ...
+* `Swipe Left`: same as `Left Arrow` key.
+* `Swipe Right`: same as `Right Arrow` key.
+* `Double Tap`: same as `Enter` key.
 
 * * *
 
