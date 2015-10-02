@@ -58,7 +58,8 @@
                 modalContent: '#modalContent',
                 button      : 'button.button',
                 mainFrame   : 'div.mainFrame',
-                keyword     : 'h1.keyword'
+                keyword     : 'h1.keyword',
+                progrss     : 'div.progress > .meter'
             };
             var animations = [
                 'callout.shake',
@@ -164,6 +165,61 @@
                     return false;
                 };
 
+                var showScrollBar = function() {
+                    var content             = $(selectors.modalContent);
+                    var progress            = $(selectors.mainModal).find(selectors.progrss);
+                    var contentScrollHeight = content[0].scrollHeight;
+                    var contentHeight       = content.height();
+                    var contentScrollTop    = content.scrollTop();
+                    if (contentScrollHeight > contentHeight) {
+                        progress.velocity(
+                                { 'width': ((contentHeight + contentScrollTop) / contentScrollHeight) * 100 + '%' },
+                                { duration: '100' }
+                        );
+                    } else {
+                        progress.css('width', '0');
+                    }
+                };
+
+                var showArticle = function(article, index) {
+                    var modal    = $(selectors.mainModal);
+                    var error    = modal.children(selectors.error);
+                    var content  = modal.children(selectors.modalContent);
+                    var progress = modal.find(selectors.progrss);
+                    var cacheKey = contentCache + index;
+                    var cache    = localStorage[cacheKey];
+                    error.addClass('hide');
+                    content.addClass('hide');
+
+                    var animation = animations[random(0, animations.length - 1)];
+
+                    var hook = {
+                        begin   : function(elements) {
+                            $(elements[0]).css('overflow', 'hidden');
+                            progress.css('width', '0');
+                        },
+                        complete: function(elements) {
+                            $(elements[0]).css('overflow-y', 'scroll');
+                            showScrollBar();
+                        }
+                    };
+
+                    if (cache !== undefined && cache.length > 0) {
+                        content.html(marked(cache));
+                        content.removeClass('hide');
+                        content.velocity(animation, hook);
+                    } else {
+                        $.get(article, function(d) {
+                            localStorage[cacheKey] = d;
+                            content.html(marked(d));
+                            content.removeClass('hide');
+                            content.velocity(animation, hook);
+                        }).fail(function() {
+                            error.removeClass('hide');
+                        });
+                    }
+                };
+
                 var getArticle = function(index) {
                     if (!checkData()) {
                         setDataAjax();
@@ -200,29 +256,7 @@
                     current                    = list[index];
                     localStorage[articleIndex] = threeBitIndex;
                     localStorage[articleName]  = current;
-                    (function(article, i) {
-                        var modal    = $(selectors.mainModal);
-                        var error    = modal.children(selectors.error);
-                        var content  = modal.children(selectors.modalContent);
-                        var cacheKey = contentCache + i;
-                        var cache    = localStorage[cacheKey];
-                        error.addClass('hide');
-                        content.addClass('hide');
-                        if (cache !== undefined && cache.length > 0) {
-                            content.html(marked(cache));
-                            content.removeClass('hide');
-                            content.velocity(animations[random(0, animations.length - 1)]);
-                        } else {
-                            $.get(article, function(d) {
-                                localStorage[cacheKey] = d;
-                                content.html(marked(d));
-                                content.removeClass('hide');
-                                content.velocity(animations[random(0, animations.length - 1)]);
-                            }).fail(function() {
-                                error.removeClass('hide');
-                            });
-                        }
-                    })(current, threeBitIndex);
+                    showArticle(current, threeBitIndex);
                     console.log(threeBitIndex + ': ' + current);
                 };
 
@@ -268,14 +302,38 @@
                     });
 
                     $(window).keyup(function(e) {
-                        // 13: enter, random;
-                        // 37: left, previous;
-                        // 39: right, next.
+                        // 33: Page Up; 34: Page Down
+                        // 35: End; 36: Home
+                        // 38: Up; 40: Down;
+                        // 13: Enter, random; 37: Left, previous; 39: Right, next.
+                        var scrollKeys = [33, 34, 35, 36, 38, 40];
+                        var s          = scrollKeys.indexOf(e.which);
+                        if (s !== -1) {
+                            var content             = $(selectors.modalContent);
+                            var contentScrollHeight = content[0].scrollHeight;
+                            var contentHeight       = content.height();
+                            var contentScrollTop    = content.scrollTop();
+                            var lineHeight          = parseInt(content.css('line-height'));
+                            var scrollValue         = [
+                                contentScrollTop - contentHeight,
+                                contentScrollTop + contentHeight,
+                                contentScrollHeight - contentScrollTop,
+                                0,
+                                contentScrollTop - lineHeight,
+                                contentScrollTop + lineHeight
+                            ];
+                            content.scrollTop(scrollValue[s]);
+                            return;
+                        }
                         var keys = [13, 37, 39];
                         var i    = keys.indexOf(e.which);
                         if (i !== -1) {
                             showQuickly(i);
                         }
+                    });
+
+                    $(selectors.modalContent).scroll(function() {
+                        showScrollBar();
                     });
 
                     (function() {
@@ -286,7 +344,7 @@
                         var hammertime = new Hammer(document.getElementsByTagName('body')[0], {});
                         hammertime.on('tap swipe', function(ev) {
                             if (ev.type === 'swipe' || (ev.type === 'tap' && ev.tapCount === 2)) {
-                                //tap, left, right
+                                // tap, left, right
                                 var directions = [1, 2, 4];
                                 var i          = directions.indexOf(ev.direction);
                                 if (i !== -1) {
@@ -295,6 +353,7 @@
                             }
                         });
                     })();
+
                 })();
 
             })();
@@ -345,8 +404,7 @@
             top: 5vh;
             min-height: 90vh;
             max-height: 90vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         div.error, div.error > h1, div.error > h3 {
@@ -384,6 +442,29 @@
             padding: inherit;
         }
 
+        #modalContent {
+            position: absolute;
+            left: 2em;
+            top: 2em;
+            right: -2em;
+            bottom: 2em;
+            padding-right: 3.5em;
+            /*overflow: hidden;*/
+            overflow-y: scroll;
+        }
+
+        .progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 0.6em;
+            background-color: inherit;
+        }
+
         /*
         pre code span.keyword {
             color: red;
@@ -418,6 +499,9 @@
     <div id="mainModal" class="reveal-modal large" data-options="animation: 'none'" data-reveal
          aria-hidden="true"
          role="dialog">
+        <div class="progress">
+            <span class="meter" style="width: 0"></span>
+        </div>
         <div class="error">
             <h1>Opps...!</h1>
 

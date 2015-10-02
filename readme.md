@@ -37,10 +37,12 @@ Local Storage keys:
 
 Shortcuts:
 
-* Press `Left Arrow` key to show the previous article.
-* Press `Right Arrow` key to show the next article.
+* Press `Left Arrow` or `Right Arrow` key to show the previous or next article.
 * Press `Enter` key to show a random article.
 * Press `Esc` key to close the modal.
+* Press `Up Arrow` or `Down Arrow` key to scroll one line up or down.
+* Press `Home` or `End` key, you know it.
+* Press `Page Up` or `Page Down` key, you know it.
 
 Touch events:
 
