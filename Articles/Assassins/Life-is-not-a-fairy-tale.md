@@ -5,7 +5,7 @@ Don't do this, Connor!
 
 Then what would you propose we do? Sit and watch while the templars take control? We are sworn to stop them. Or have you forgotten? 
 
-Assassins are meant to be quiet, precise. We do not go announcing conspiracies form the rooftops to all who pass by.
+Assassins are meant to be quiet, precise. We do not go announcing conspiracies from the rooftops to all who pass by.
 
 Who are you to lecture anyone? You locked yourself away in this crumbling heap and gave up on the brotherhood entirely. Since the day I arrived, you've done nothing but discourage me. And on the rare occasions you've chosen to help, you've  done so little, you may as well have done nothing at all.
 
