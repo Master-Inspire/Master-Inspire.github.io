@@ -7,532 +7,289 @@
 
     <!--COMMENTED OUT!-->
     <!--<script src="bower_components/jquery/dist/jquery.js"></script>-->
-    <!--<script src="bower_components/modernizr/modernizr.js"></script>-->
-    <!--<script src="bower_components/foundation/js/foundation.js"></script>-->
+    <!--<script src="bower_components/underscore/underscore.js"></script>-->
+    <!--<script src="bower_components/backbone/backbone.js"></script>-->
+    <!--<script src="bower_components/foundation-sites/dist/foundation.js"></script>-->
     <!--<script src="bower_components/marked/lib/marked.js"></script>-->
-    <!--<script src="bower_components/velocity/velocity.js"></script>-->
-    <!--<script src="bower_components/velocity/velocity.ui.js"></script>-->
-    <!--<script src="bower_components/hammerjs/hammer.js"></script>-->
-    <!--<link href="bower_components/foundation/css/normalize.css" rel="stylesheet">-->
-    <!--<link href="bower_components/foundation/css/foundation.css" rel="stylesheet">-->
+    <!--<link href="bower_components/foundation-sites/dist/foundation-flex.css" rel="stylesheet">-->
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/js/foundation.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.ui.min.js"></script>
-    <script>!Modernizr.touch || document.write('<script src="//cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.6/hammer.min.js"><\/script>')</script>
-    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.3/css/foundation.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.0/foundation.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.0/foundation-flex.min.css" rel="stylesheet">
 
     <title>Animus Blog</title>
 
     <script>
         'use strict';
-
-        var Site = new function () {
-
-            var _this = this;
-
-            _this.Consts = {
-                selectors: {
-                    main: '#main',
-                    mainModal: '#mainModal',
-                    error: 'div.error',
-                    modalContent: '#modalContent',
-                    button: 'button.button',
-                    mainFrame: 'div.mainFrame',
-                    keyword: 'h1.keyword',
-                    progrss: 'div.progress > .meter'
-                },
-                animations: [
-                    'callout.shake',
-                    'callout.pulse',
-                    'callout.tada',
-                    'callout.bounce',
-                    'callout.swing',
-                    //'callout.flash',
-                    'transition.fadeIn',
-                    'transition.bounceIn',
-                    'transition.bounceUpIn',
-                    'transition.bounceDownIn',
-                    'transition.bounceLeftIn',
-                    'transition.slideRightIn',
-                    'transition.bounceRightIn',
-                    'transition.slideUpIn',
-                    'transition.slideDownIn',
-                    'transition.slideLeftIn',
-                    'transition.slideUpBigIn',
-                    'transition.flipXIn',
-                    'transition.slideDownBigIn',
-                    'transition.slideLeftBigIn',
-                    'transition.slideRightBigIn',
-                    'transition.perspectiveUpIn',
-                    'transition.perspectiveDownIn',
-                    'transition.perspectiveLeftIn',
-                    'transition.perspectiveRightIn',
-                    'transition.flipYIn',
-                    'transition.flipBounceXIn',
-                    'transition.flipBounceYIn',
-                    'transition.swoopIn',
-                    'transition.whirlIn',
-                    'transition.shrinkIn',
-                    'transition.expandIn'
-                ],
-                keywords: ['When?', 'Where?', 'How?', 'Why?', 'What?', 'Which?', 'Who?', 'Enough!'],
-                storageKeys: {
-                    allArticles: 'allArticles',
-                    which: 'which',
-                    // Not in use.
-                    articleName: 'articleName',
-                    articleIndex: 'articleIndex',
-                    contentCache: 'contentCache',
-                    cacheExpiration: 'cacheExpiration'
-                }
-            };
-
-            _this.randomInRange = function (min, max) {
-                return (Math.floor(Math.random() * (max - min + 1)) + min);
-            };
-
-            _this.getSearchObject = function () {
-                var o = {};
-                var search = window.location.search.trim();
-                if (search.indexOf('?') !== 0) {
-                    return o;
-                }
-                search = search.substring(1);
-                search.split('&').forEach(function (v) {
-                    var l = v.split('=');
-                    o[l[0].toLowerCase()] = l[1];
-                });
-                console.log(o);
-                return o;
-            };
-
-            _this.randomColor = function () {
-                return _this.randomInRange(10, 250);
-            };
-
-            _this.randomColorInvert = function (color) {
-                return Math.abs(250 - color);
-            };
-
-            _this.randomBackgroundColor = function () {
-                // Change background color and keyword randomly.
-                var r = _this.randomColor(), g = _this.randomColor(), b = _this.randomColor();
-                var x = _this.randomInRange(0, _this.Consts.keywords.length - 1);
-                var main = $(_this.Consts.selectors.main);
-                var frame = main.children(_this.Consts.selectors.mainFrame);
-                frame.velocity({
-                    'backgroundColorRed': r,
-                    'backgroundColorGreen': g,
-                    'backgroundColorBlue': b
-                });
-                frame.children(_this.Consts.selectors.keyword)
-                        .velocity({
-                            'colorRed': _this.randomColorInvert(r),
-                            'colorGreen': _this.randomColorInvert(g),
-                            'colorBlue': _this.randomColorInvert(b)
-                        })
-                        .text(_this.Consts.keywords[x]);
-            };
-
-            _this.threeBitIndex = function (n) {
-                var temp = n.toString();
-                while (temp.length < 3) {
-                    temp = '0' + temp;
-                }
-                return temp;
-            };
-
-            _this.randomAnimation = function () {
-                return _this.Consts.animations[_this.randomInRange(0, _this.Consts.animations.length - 1)];
-            }
-
-        };
-
-        var SiteArticle = new function () {
-            var _this = this;
-            var _consts = Site.Consts;
-            var _selectors = _consts.selectors;
-            var _storageKeys = _consts.storageKeys;
-            var _animations = _consts.animations;
-
-            _this.setDataAjax = function (callback) {
-                $.get('list.txt', function (data) {
-                    var str = data.toString()
-                            .split('\n')
-                            .filter(function (value) {
-                                return value.trim() !== '';
-                            });
-                    var o = {allArticles: str};
-                    localStorage.clear();
-                    localStorage[_storageKeys.allArticles] = JSON.stringify(o);
-                    localStorage[_storageKeys.cacheExpiration] = Date.now();
-                    typeof callback === 'function' && callback();
-                });
-            };
-
-            _this.checkData = function () {
-                var diff = (Date.now() - (parseInt(localStorage[_storageKeys.cacheExpiration]))) / 1000 / 60 / 60;
-                if (isNaN(diff) || diff >= 72 || diff <= 0) {
-                    localStorage.clear();
-                }
-                var item = localStorage[_storageKeys.allArticles];
-                if (item !== undefined) {
-                    var p = JSON.parse(item);
-                    return (p.hasOwnProperty(_storageKeys.allArticles)
-                    && Array.isArray(p[_storageKeys.allArticles])
-                    && p[_storageKeys.allArticles].length > 0);
-                }
-                return false;
-            };
-
-            _this.showScrollBar = function () {
-                var content = $(_selectors.modalContent);
-                var progress = $(_selectors.mainModal).find(_selectors.progrss);
-                var contentScrollHeight = content[0].scrollHeight;
-                var contentHeight = content.height();
-                var contentScrollTop = content.scrollTop();
-                if (contentScrollHeight > contentHeight) {
-                    progress.velocity(
-                            {'width': ((contentHeight + contentScrollTop) / contentScrollHeight) * 100 + '%'},
-                            {'duration': '100'}
-                    );
-                } else {
-                    progress.css('width', '0');
-                }
-            };
-
-            _this.showArticle = function (article, index) {
-                var modal = $(_selectors.mainModal);
-                var error = modal.children(_selectors.error);
-                var content = modal.children(_selectors.modalContent);
-                var progress = modal.find(_selectors.progrss);
-                var cacheKey = _storageKeys.contentCache + index;
-                var cache = localStorage[cacheKey];
-                error.addClass('hide');
-                content.addClass('hide');
-                var animation = _animations[Site.randomInRange(0, _animations.length - 1)];
-                var hook = {
-                    begin: function (elements) {
-                        $(elements[0]).css('overflow', 'hidden');
-                        progress.css('width', '0');
-                    },
-                    complete: function (elements) {
-                        $(elements[0]).css('overflow-y', 'scroll');
-                        _this.showScrollBar();
-                    }
-                };
-
-                if (cache !== undefined && cache.length > 0) {
-                    content.html(marked(cache));
-                    content.removeClass('hide');
-                    content.velocity(animation, hook);
-                } else {
-                    $.get(article, function (d) {
-                        localStorage[cacheKey] = d;
-                        content.html(marked(d));
-                        content.removeClass('hide');
-                        content.velocity(animation, hook);
-                    }).fail(function () {
-                        error.removeClass('hide');
-                    });
-                }
-            };
-
-            _this.getArticle = function (index) {
-                if (!_this.checkData()) {
-                    _this.setDataAjax();
-                    var modal = $(_selectors.mainModal);
-                    modal.children(_selectors.error).removeClass('hide');
-                    modal.children(_selectors.modalContent).addClass('hide');
-                    return;
-                }
-
-                var list = JSON.parse(localStorage[_storageKeys.allArticles])[_storageKeys.allArticles];
-                var length = list.length - 1;
-                var current;
-                index = parseInt(index, 10);
-                if (!isNaN(index)) {
-                    if (index < 0) {
-                        index = length;
-                    } else if (index > length) {
-                        index = 0;
-                    }
-                } else {
-                    index = Site.randomInRange(0, length);
-                    while (parseInt(localStorage[_storageKeys.articleIndex], 10) === index) {
-                        index = Site.randomInRange(0, length);
-                    }
-                }
-                current = list[index];
-                localStorage[_storageKeys.articleIndex] = Site.threeBitIndex(index);
-                localStorage[_storageKeys.articleName] = current;
-                _this.showArticle(current, Site.threeBitIndex(index));
-                console.log(Site.threeBitIndex(index) + ': ' + current);
-            };
-
-            _this.showInitContent = function () {
-                var o = Site.getSearchObject();
-                var i = parseInt(localStorage[_storageKeys.articleIndex], 10);
-                if (o.hasOwnProperty(_storageKeys.which) && !isNaN(o[_storageKeys.which])) {
-                    i = parseInt(o[_storageKeys.which], 10);
-                }
-                if (!isNaN(i)) {
-                    _this.getArticle(i);
-                    setTimeout(function () {
-                        $(_selectors.mainModal).foundation('reveal', 'open');
-                    }, 100);
-                }
-            };
-
-            _this.showQuickly = function (i) {
-                var p = parseInt(localStorage[_storageKeys.articleIndex], 10);
-                var values = [null, p - 1, p + 1];
-                var modal = $(_selectors.mainModal);
-                if (!modal.hasClass('open')) {
-                    modal.foundation('reveal', 'open');
-                }
-                _this.getArticle(values[i]);
-            };
-
-            _this.touchSupport = function () {
-                if (!Modernizr.touch) {
-                    return;
-                }
-                delete Hammer.defaults.cssProps.userSelect;
-                var hammertime = new Hammer(document.getElementsByTagName('body')[0], {});
-                hammertime.on('tap swipe', function (ev) {
-                    if (ev.type === 'swipe' || (ev.type === 'tap' && ev.tapCount === 2)) {
-                        // tap, left, right
-                        var directions = [1, 2, 4];
-                        var i = directions.indexOf(ev.direction);
-                        if (i !== -1) {
-                            _this.showQuickly(i);
-                        }
-                    }
-                });
-            };
-
-            _this.operateKey = function (key) {
-                // 33: Page Up; 34: Page Down;
-                // 35: End; 36: Home;
-                // 38: Up; 40: Down;
-                var scrollKeys = [33, 34, 35, 36, 38, 40];
-                var s = scrollKeys.indexOf(key);
-                if (s !== -1) {
-                    var content = $(_selectors.modalContent);
-                    var contentScrollHeight = content[0].scrollHeight;
-                    var contentHeight = content.height();
-                    var contentScrollTop = content.scrollTop();
-                    var lineHeight = parseInt(content.css('line-height'));
-                    var scrollValue = [
-                        contentScrollTop - contentHeight,
-                        contentScrollTop + contentHeight,
-                        contentScrollHeight - contentScrollTop,
-                        0,
-                        contentScrollTop - lineHeight,
-                        contentScrollTop + lineHeight
-                    ];
-                    content.scrollTop(scrollValue[s]);
-                    return;
-                }
-
-                // 13: Enter, random; 37: Left, previous; 39: Right, next.
-                var keys = [13, 37, 39];
-                var i = keys.indexOf(key);
-                i !== -1 && _this.showQuickly(i);
-            }
-        };
-
-        $(document).ready(function () {
+        $(document).ready(function() {
             $(this).foundation();
 
-            Site.randomBackgroundColor();
-            setInterval(function () {
-                Site.randomBackgroundColor();
-            }, 2000);
+            (function(_, Backbone, $, marked) {
+                var Router = Backbone.Router.extend({
+                    switchView: function(view) {
+                        var model = this.articleList.findWhere(view);
+                        new ContentView({ model: model });
+                    },
 
-            // Show init content.
-            if (!SiteArticle.checkData()) {
-                SiteArticle.setDataAjax(function () {
-                    SiteArticle.showInitContent();
+                    articleByPath: function(action) {
+                        this.switchView({ title: action });
+                    },
+
+                    articleByIndex: function(index) {
+                        var id             = parseInt(index);
+                        this._currentIndex = id;
+                        this.switchView({ id: id });
+                    },
+
+                    catchAll: function(action) {
+                        console.log('catchAll');
+                        if (action == null) {
+                            this.toRandom();
+                        } else {
+                            new ContentView();
+                        }
+                    },
+
+                    _currentIndex: 0,
+                    currentModel : null,
+
+                    toRandom: _.debounce(function() {
+                        this._currentIndex = _.random(0, this.articleList.length - 1);
+                        this.navigate("!/" + this._currentIndex, { trigger: true });
+                    }, 500, { trailing: false }),
+
+                    toNext: _.debounce(function() {
+                        this._currentIndex = this._currentIndex + 1;
+                        if (this._currentIndex >= this.articleList.length) {
+                            this._currentIndex = 0;
+                        }
+                        this.navigate("!/" + this._currentIndex, { trigger: true });
+                    }, 500, { trailing: false }),
+
+                    toPrevious: _.debounce(function() {
+                        this._currentIndex = this._currentIndex - 1;
+                        if (this._currentIndex < 0) {
+                            this._currentIndex = this.articleList.length - 1;
+                        }
+                        this.navigate("!/" + this._currentIndex, { trigger: true });
+                    }, 500, { trailing: false }),
+
+                    initialize: function() {
+                        // catchAll first;
+                        var regexpRoutes = [
+                            [/^(.*)$/, 'catchAll', this.catchAll],
+                            [/^!(\/.*\.md)$/, 'articleByPath', this.articleByPath],
+                            [/^!\/(\d+)$/, 'articleByIndex', this.articleByIndex]
+                        ];
+                        var that         = this;
+                        _.each(regexpRoutes, function(r) {
+                            that.route.apply(that, r);
+                        });
+
+                        this.articleList = new ArticleList();
+                        this.articleList.fetchList({
+                            success: function() {
+                                Backbone.history.start({ pushState: false, hashChange: true });
+                            },
+                            error  : function(error) {
+                                new ContentView();
+                                console.log(error);
+                            }
+                        });
+                    },
+                    routes    : {}
                 });
-            } else {
-                SiteArticle.showInitContent();
-            }
 
-            // Shortcuts and Touch events
-            $(Site.Consts.selectors.main).find(Site.Consts.selectors.button).click(function () {
-                SiteArticle.getArticle();
-            });
+                var AppView = Backbone.View.extend({
+                    initialize: function() {
+                        var that = this;
+                        that.randomBackground();
+                        setInterval(function() {
+                            that.randomBackground();
+                        }, 2000);
+                        this.router = new Router();
+                    },
 
-            SiteArticle.touchSupport();
+                    el: document.getElementsByTagName('body')[0],
 
-            $(window).keyup(function (e) {
-                SiteArticle.operateKey(e.which);
-            });
+                    events: {
+                        'keydown'        : 'keyAction',
+                        'click #previous': 'clickPrevious',
+                        'click #next'    : 'clickNext',
+                        'click #random'  : 'clickRandom'
+                    },
 
-            $(Site.Consts.selectors.modalContent).scroll(function () {
-                SiteArticle.showScrollBar();
-            });
+                    keyAction    : function(e) {
+                        // 13: Enter, random; 37: Left, previous; 39: Right, next.
+                        var keys = [13, 37, 39];
+                        var i    = keys.indexOf(e.which);
+                        if (i !== -1) {
+                            var action = [this.clickRandom, this.clickPrevious, this.clickNext];
+                            action[i].call(this, e);
+                        }
+                    },
+                    clickRandom  : function() {
+                        console.log('random');
+                        this.router.toRandom();
+                    },
+                    clickPrevious: function() {
+                        console.log('previous');
+                        this.router.toPrevious();
+                    },
+                    clickNext    : function() {
+                        console.log('next');
+                        this.router.toNext();
+                    },
 
-            $(this).on('open.fndtn.reveal', '[data-reveal]', function () {
-                var modal = $(this);
-                modal.velocity(Site.randomAnimation());
-            });
+                    randomBackground: function() {
+                        var r = _.random(0, 254),
+                            g = _.random(0, 254),
+                            b = _.random(0, 254),
+                            a = Math.random();
+                        this.$el.add('footer').css('background-color',
+                                'rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
+                    }
+                });
 
-            $(this).on('opened.fndtn.reveal', '[data-reveal]', function () {
-                var selectors = Site.Consts.selectors;
-                $('.reveal-modal-bg').hide();
-                $(selectors.main).find(selectors.button).prop('disabled', true);
-            });
+                var ArticleModel = Backbone.Model.extend({
 
-            $(this).on('closed.fndtn.reveal', '[data-reveal]', function () {
-                var selectors = Site.Consts.selectors;
-                $(selectors.main).find(selectors.button).prop('disabled', false);
-            });
+                    defaults: function() {
+                        return {
+                            id     : 0,
+                            title  : null,
+                            content: null
+                        };
+                    },
 
+                    loadContent: function(options) {
+                        options   = options || {};
+                        var title = this.get('title');
+                        var that  = this;
+                        $.get(title).done(function(data) {
+                            that.set({ content: data });
+                            _.isFunction(options.success) && options.success();
+                        }).fail(function() {
+                            _.isFunction(options.error) && options.error();
+                        });
+                    }
+                });
+
+                var ArticleList = Backbone.Collection.extend({
+
+                    model: ArticleModel,
+                    url  : 'list.txt',
+
+                    fetchList: function(options) {
+                        options  = options || {};
+                        var that = this;
+                        $.get(this.url).done(function(data) {
+                            var array  = data.toString()
+                                    .split('\n')
+                                    .filter(function(value) {
+                                        return value.trim() !== '';
+                                    });
+                            var result = _.map(array, function(value, index) {
+                                return { id: index, title: value, content: null };
+                            });
+                            that.set(result);
+                            console.log(that);
+                            _.isFunction(options.success) && options.success(result);
+                        }).fail(function() {
+                            _.isFunction(options.error) && options.error();
+                        });
+                    }
+                });
+
+                var ContentView = Backbone.View.extend({
+
+                    el        : document.getElementById('contentView'),
+                    errorEl   : $('#errorView'),
+                    initialize: function() {
+                        var that = this;
+                        try {
+                            this.model.loadContent({
+                                success: function() {
+                                    that.render();
+                                },
+                                error  : function() {
+                                    that.renderError();
+                                }
+                            });
+                        } catch (e) {
+                            that.renderError();
+                        }
+                    },
+
+                    render: function() {
+                        try {
+                            this.$el.empty();
+                            var raw = this.model.get('content');
+                            this.$el.html(marked(raw));
+                        } catch (e) {
+                            this.$el.html(this.errorEl.html());
+                            console.log(e);
+                        }
+                    },
+
+                    renderError: function() {
+                        this.$el.empty();
+                        this.$el.html(this.errorEl.html());
+                    }
+                });
+
+                new AppView();
+            })(window._, window.Backbone, $, marked);
         });
-
     </script>
     <style>
         body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            margin: 0;
-            border: none;
+            width: 95vw;
+            overflow-x: hidden;
         }
 
-        #main > div.mainFrame {
-            width: 100vw;
-            height: 100vh;
-            text-align: center;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+        #contentView {
+            margin-top: 5vh;
+            min-height: 82vh;
         }
 
-        .mainFrame > h1, .mainFrame > button {
-            position: relative;
-            top: 40vh;
-            margin: 0;
-        }
-
-        #mainModal {
-            top: 5vh;
-            min-height: 90vh;
-            max-height: 90vh;
-            overflow: hidden;
-        }
-
-        div.error, div.error > h1, div.error > h3 {
-            color: red;
-            text-align: center !important;
-        }
-
-        div.error {
-            position: relative;
-            top: 22vh;
-        }
-
-        p {
-            margin-bottom: 1rem;
-        }
-
-        pre, code {
-            background-color: #f2f2f2;
-            font-family: Consolas, Courier, monospace;
-            border: none;
-        }
-
-        pre {
-            margin-bottom: 2rem;
-            border: 1px solid #d8d8d8;
-            padding: 1rem;
-        }
-
-        pre code span.label {
-            background: none;
-            color: #333333;
-            border: none;
-            font: inherit;
-            display: initial;
-            padding: inherit;
-        }
-
-        #modalContent {
+        .error {
             position: absolute;
-            left: 2em;
-            top: 2em;
-            right: -2em;
-            bottom: 2em;
-            padding-right: 3.5em;
-            /*overflow: hidden;*/
-            overflow-y: scroll;
-        }
-
-        .progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 0.6em;
-            background-color: inherit;
-        }
-
-        /*
-        pre code span.keyword {
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            top: 10px;
             color: red;
         }
 
-        pre code .title {
-            color: #0a46ff;
+        footer {
+            margin: 0 !important;
+            padding-bottom: 0.5rem !important;
+            padding-top: 0.5rem !important;
         }
-
-        pre code span.comment {
-            color: #009900;
-        }
-
-        pre code span.number {
-            color: #ffa612;
-        }
-
-        pre code span.string {
-            color: rgb(139, 59, 152);
-        }
-        */
     </style>
 </head>
-<body>
-    <div id="main">
-        <div class="mainFrame">
-            <h1 class="keyword">How?</h1>
-            <br>
-            <button class="button alert radius" tabindex="-100" data-reveal-id="mainModal">Show Me the Code!</button>
+<body class="row expanded">
+
+    <div class="column hide-for-small-only medium-2 large-2 hide-for-print"></div>
+    <div class="column small-12 medium-8 large-8">
+        <div id="contentView" class="callout secondary">
         </div>
+        <footer class=" show-for-small-only row callout expanded">
+            <a class="float-left" id="previous">Previous</a>
+            <a class="float-center" id="random">Random</a>
+            <a class="float-right" id="next">Next</a>
+        </footer>
     </div>
-    <div id="mainModal" class="reveal-modal large" data-options="animation: 'none'" data-reveal>
-        <div class="progress">
-            <span class="meter" style="width: 0"></span>
-        </div>
-        <div class="error">
+    <div class="column hide-for-small-only medium-2  large-2 hide-for-print"></div>
+    <template id="errorView">
+        <div class="error callout alert">
             <h1>Opps...!</h1>
 
             <h3>Something went wrong!</h3>
         </div>
-        <article id="modalContent" class="hide">
-        </article>
-        <br>
-        <a class="close-reveal-modal show-for-touch">&#215;</a>
-    </div>
+    </template>
 </body>
 </html>
