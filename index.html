@@ -1,0 +1,78 @@
+<html>
+<head>
+    <title>Error</title>
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <meta charset="utf-8">
+</head>
+<body>
+    <div class="wrapper">
+        <h1 class="emoticon" id="emoticon">&#123;&#123; (&gt;_&lt;) &#125;&#125;</h1>
+        <p class="emoticon-text">Something went seriously wrong.</p>
+    </div>
+    <style>
+        body {
+            color: #212529;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, "Helvetica Neue",
+                         Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.5;
+        }
+
+        .wrapper {
+            padding-bottom: 3rem;
+            padding-top: 3rem;
+            text-align: center;
+        }
+
+        .emoticon {
+            cursor: pointer;
+            font-size: 4.5rem;
+            font-weight: 300;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .emoticon-text {
+            font-size: 1.25rem;
+            font-weight: 300;
+            margin-bottom: 1rem;
+            margin-top: 0;
+        }
+    </style>
+    <script>
+        (function () {
+            let emoticonChanges = 0;
+            const eyes = ['O', 'o', '-', '>', '<'];
+
+            function rand(min, max) {
+                return Math.round((Math.random() * (max - min))) + min;
+            }
+
+            function getRandomEye() {
+                return eyes[rand(0, (eyes.length - 1))];
+            }
+
+            function getRandomEmoticon() {
+                emoticonChanges++;
+
+                if (emoticonChanges >= 20) {
+                    return '\\\\ (x_x) //';
+                }
+
+                return `{{ (${getRandomEye()}_${getRandomEye()}) }}`;
+            }
+
+            document.addEventListener('DOMContentLoaded',
+                function () {
+                    document.getElementById('emoticon')
+                        .addEventListener('click',
+                            function () {
+                                this.innerHTML = getRandomEmoticon();
+                            });
+                });
+        })();
+    </script>
+</body>
+</html>
